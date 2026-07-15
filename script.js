@@ -40,12 +40,27 @@ document.addEventListener('keydown', (e)=>{
   if(e.key === 'Escape') closeFlyout();
 });
 
-// Active-state highlighting + closing menus after choosing a link
-document.querySelectorAll('.mobile-drawer a, .nav-links a, .chrome-flyout a').forEach(a=>{
+// Active-state highlighting + closing menus after choosing a link.
+// Topnav + mobile drawer mirror each other (and scroll position). The
+// chrome-flyout is a separate, independent menu — clicking it only
+// affects its own links, and never lights up (or is lit up by) the topnav.
+let manualNavUntil = 0;
+document.querySelectorAll('.mobile-drawer a, .nav-links a').forEach(a=>{
   a.addEventListener('click', (e)=>{
-    document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
-    document.querySelectorAll('.nav-link[data-target="'+a.dataset.target+'"]').forEach(l=>l.classList.add('active'));
+    document.querySelectorAll('.mobile-drawer a, .nav-links a').forEach(l=>l.classList.remove('active'));
+    document.querySelectorAll('.mobile-drawer a[data-target="'+a.dataset.target+'"], .nav-links a[data-target="'+a.dataset.target+'"]').forEach(l=>l.classList.add('active'));
+    // Ignore scroll-driven highlighting for a moment so it doesn't fight
+    // this click's active state while the smooth-scroll is still animating.
+    manualNavUntil = Date.now() + 900;
     closeDrawer();
+    closeFlyout();
+  });
+});
+
+document.querySelectorAll('.chrome-flyout a').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    document.querySelectorAll('.chrome-flyout a').forEach(l=>l.classList.remove('active'));
+    a.classList.add('active');
     closeFlyout();
   });
 });
@@ -58,20 +73,29 @@ refreshBtn.addEventListener('click', ()=>{
   setTimeout(()=>{ window.location.reload(); }, 500);
 });
 
-// Join button: simple, honest feedback (no external navigation implied)
-document.getElementById('joinBtn').addEventListener('click', ()=>{
-  const btn = document.getElementById('joinBtn');
-  btn.textContent = 'Request Sent ✓';
-  setTimeout(()=>{ btn.textContent = 'Join the Roster'; }, 2200);
+// Join button (now a link so a real URL can be dropped into its href later).
+// While href is still the "#" placeholder, show feedback instead of jumping
+// to the top of the page. Once a real link is added, it navigates normally.
+document.getElementById('joinBtn').addEventListener('click', (e)=>{
+  const btn = e.currentTarget;
+  if(btn.getAttribute('href') === '#'){
+    e.preventDefault();
+    btn.textContent = 'Request Sent ✓';
+    setTimeout(()=>{ btn.textContent = 'Join the Roster'; }, 2200);
+  }
 });
 
 // Active-state highlighting on scroll
-const sections = ['home','members','reviews'].map(id=>document.getElementById(id));
-const navLinksAll = document.querySelectorAll('.nav-link');
+// data-target values don't always match element ids (e.g. "members" -> #offers),
+// so map each nav target to its real section id.
+const sectionMap = { home:'home', members:'offers', reviews:'reviews' };
+const navLinksAll = document.querySelectorAll('.nav-links a, .mobile-drawer a');
 window.addEventListener('scroll', ()=>{
+  if(Date.now() < manualNavUntil) return; // let a fresh click's highlight win while it scrolls into place
   let current = 'home';
-  sections.forEach(sec=>{
-    if(sec && window.scrollY + 140 >= sec.offsetTop) current = sec.id;
+  Object.keys(sectionMap).forEach(target=>{
+    const sec = document.getElementById(sectionMap[target]);
+    if(sec && window.scrollY + 140 >= sec.offsetTop) current = target;
   });
   navLinksAll.forEach(l=>{
     l.classList.toggle('active', l.dataset.target === current);
