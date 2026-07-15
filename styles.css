@@ -612,7 +612,7 @@ footer{
 }
 
 /* Reviews section (functional nav target) */
-#reviews{
+#information{
   max-width:1180px;
   margin:0 auto 70px;
   padding:0 28px;
@@ -643,7 +643,9 @@ footer{
   .chrome-url{font-size:11px;letter-spacing:1px;}
   .gold-desc{text-align:left;max-width:100%;}
 }
-@media (max-width:420px){
+@media (max-width:700px){
   .members-grid{grid-template-columns:1fr;}
   .leader-card{min-height:0;}
+  .leader-art{min-height:200px;}
+  .leader-art svg{width:90px;height:90px;}
 }

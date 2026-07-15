@@ -88,7 +88,7 @@ document.getElementById('joinBtn').addEventListener('click', (e)=>{
 // Active-state highlighting on scroll
 // data-target values don't always match element ids (e.g. "members" -> #offers),
 // so map each nav target to its real section id.
-const sectionMap = { home:'home', members:'offers', reviews:'reviews' };
+const sectionMap = { home:'home', members:'offers', reviews:'information' };
 const navLinksAll = document.querySelectorAll('.nav-links a, .mobile-drawer a');
 window.addEventListener('scroll', ()=>{
   if(Date.now() < manualNavUntil) return; // let a fresh click's highlight win while it scrolls into place
